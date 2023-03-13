@@ -2,28 +2,26 @@ package com.eteration.simplebanking;
 
 
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.eteration.simplebanking.model.Account;
-import com.eteration.simplebanking.model.DepositTransaction;
-import com.eteration.simplebanking.model.InsufficientBalanceException;
-import com.eteration.simplebanking.model.WithdrawalTransaction;
+import com.eteration.simplebanking.model.*;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class ModelTest {
-	
+
 	@Test
 	public void testCreateAccountAndSetBalance0() {
 		Account account = new Account("Kerem Karaca", "17892");
-		assertTrue(account.getOwner().equals("Kerem Karaca"));
+		assertTrue(account.getAccountOwner().equals("Kerem Karaca"));
 		assertTrue(account.getAccountNumber().equals("17892"));
 		assertTrue(account.getBalance() == 0);
 	}
 
 	@Test
-	public void testDepositIntoBankAccount() {
+	public void testDepositIntoBankAccount() throws InsufficientBalanceException {
 		Account account = new Account("Demet Demircan", "9834");
 		account.deposit(100);
 		assertTrue(account.getBalance() == 100);
@@ -45,9 +43,8 @@ public class ModelTest {
 			account.deposit(100);
 			account.withdraw(500);
 		  });
-
 	}
-	
+
 	@Test
 	public void testTransactions() throws InsufficientBalanceException {
 		// Create account
@@ -55,17 +52,34 @@ public class ModelTest {
 		assertTrue(account.getTransactions().size() == 0);
 
 		// Deposit Transaction
-		DepositTransaction depositTrx = new DepositTransaction(100);
+		DepositTransaction depositTrx = new DepositTransaction(100.0);
 		assertTrue(depositTrx.getDate() != null);
 		account.post(depositTrx);
 		assertTrue(account.getBalance() == 100);
 		assertTrue(account.getTransactions().size() == 1);
 
 		// Withdrawal Transaction
-		WithdrawalTransaction withdrawalTrx = new WithdrawalTransaction(60);
+		WithdrawalTransaction withdrawalTrx = new WithdrawalTransaction(60.0);
 		assertTrue(withdrawalTrx.getDate() != null);
 		account.post(withdrawalTrx);
 		assertTrue(account.getBalance() == 40);
 		assertTrue(account.getTransactions().size() == 2);
+
+
+
 	}
+
+	@Test
+	public void testBillPaymentTransactions() throws InsufficientBalanceException {
+
+		//BillPayment Transaction Test
+		Account account = new Account("Jim", "12345");
+		account.post(new DepositTransaction(1000));
+		account.post(new WithdrawalTransaction(200));
+		account.post(new PhoneBillPaymentTransaction("Vodafone", "5423345566", 96.50));
+		assertEquals(account.getBalance(), 703.50, 0.0001);
+	}
+
+
+
 }
